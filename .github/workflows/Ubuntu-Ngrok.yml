@@ -7,9 +7,6 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - name: Collect info
-      run: |
-        whoami
     - name: Install Ngrok
       run: |
         curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
@@ -28,12 +25,12 @@ jobs:
         sudo apt-get install -y openssh-server
         sudo systemctl enable ssh
         sudo systemctl start ssh
-        sudo passwd runner
-        #echo "runner:P@ssw0rd!" | sudo chpasswd
         sudo ufw allow ssh
+        mkdir -p $HOME/.ssh/
+        curl https://github.com/rasooll.keys > $HOME/.ssh/authorized_keys
+        echo "Username"
+        whoami
 
     - name: Create SSH Tunnel
       run: ./ngrok tcp 22
 
-    - name: Display Ngrok Tunnel Info
-      run: curl http://localhost:4040/api/tunnels
