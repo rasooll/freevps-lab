@@ -1,0 +1,39 @@
+name: Ubuntu - Ngrok
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Collect info
+      run: |
+        whoami
+    - name: Install Ngrok
+      run: |
+        curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
+          sudo gpg --dearmor -o /etc/apt/keyrings/ngrok.gpg && \
+          echo "deb [signed-by=/etc/apt/keyrings/ngrok.gpg] https://ngrok-agent.s3.amazonaws.com buster main" | \
+          sudo tee /etc/apt/sources.list.d/ngrok.list && \
+          sudo apt update && sudo apt install ngrok
+
+    - name: Authenticate Ngrok
+      run: ngrok authtoken $NGROK_AUTH_TOKEN
+      env:
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+
+    - name: Install and Configure SSH
+      run: |
+        sudo apt-get install -y openssh-server
+        sudo systemctl enable ssh
+        sudo systemctl start ssh
+        sudo passwd runner
+        #echo "runner:P@ssw0rd!" | sudo chpasswd
+        sudo ufw allow ssh
+
+    - name: Create SSH Tunnel
+      run: ./ngrok tcp 22
+
+    - name: Display Ngrok Tunnel Info
+      run: curl http://localhost:4040/api/tunnels
