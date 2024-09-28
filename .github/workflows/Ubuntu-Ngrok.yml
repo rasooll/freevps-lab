@@ -1,10 +1,21 @@
 name: Ubuntu - Ngrok
 
-on: [workflow_dispatch]
+on: 
+  workflow_dispatch:
+    inputs:
+      ubuntu_version:
+        description: 'Select Ubuntu image version'
+        required: true
+        default: 'ubuntu-24.04'
+        type: choice
+        options:
+          - ubuntu-24.04
+          - ubuntu-22.04
+          - ubuntu-20.04
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ inputs.ubuntu_version }}
 
     steps:
     - name: Install Ngrok
@@ -23,7 +34,6 @@ jobs:
     - name: Install and Configure SSH
       run: |
         sudo apt-get install -y openssh-server
-        sudo systemctl enable ssh
         sudo systemctl start ssh
         sudo ufw allow ssh
         mkdir -p $HOME/.ssh/
